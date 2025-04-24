@@ -1,0 +1,72 @@
+version: '3.1'
+services:
+  cart-service:
+    image: orderservices:1.0
+    hostname: ms.cart
+    depends_on:
+      - order_db
+      - redis
+    ports:
+      - "8081:8081"
+#    First we need create network for feign client
+#    docker network create ms-services
+    networks:
+      - ms-services
+    volumes:
+      - ./logs/order-service:/opt/app/logs/order-service
+    environment:
+      DB_CONNECTION_IP: order_db
+      DB_CONNECTION_PORT: 5432
+      DB_NAME: order_service
+      DB_CONNECTION_USERNAME: admin
+      DB_CONNECTION_PASSWORD: 123456
+  cart_db:
+    hostname: postgresql
+    image: postgres:15
+    networks:
+      - ms-services
+    restart: always
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: order_service
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5433:5433"
+#  adminer:
+#    image: adminer
+#    networks:
+#      - ms-services
+#    restart: always
+#    ports:
+#      - "8581:8080"
+  redis:
+    image: redis:latest
+    container_name: redis_cart
+    volumes:
+      - redis_data:/data
+    networks:
+      - ms-services
+    ports:
+      - "6380:6380"
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.1
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs/order-service:/opt/app/logs/order-service
+#    depends_on:
+#      - elasticsearch
+    networks:
+      - ms-services
+networks:
+  ms-services:
+    external: true
+    driver: bridge
+volumes:
+  order_db_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
