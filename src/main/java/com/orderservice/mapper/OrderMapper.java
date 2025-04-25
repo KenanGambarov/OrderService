@@ -31,7 +31,7 @@ public class OrderMapper {
                 .build();
     }
 
-    public static OrderEntity createEntity(Long userId){
+    public static OrderEntity toRequestDto(Long userId){
         return OrderEntity.builder()
                 .userId(userId)
                 .build();

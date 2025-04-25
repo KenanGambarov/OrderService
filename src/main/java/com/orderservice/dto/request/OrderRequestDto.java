@@ -1,5 +1,6 @@
 package com.orderservice.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.orderservice.dto.enums.OrderStatus;
 import com.orderservice.dto.enums.PaymentStatus;
 import com.orderservice.entity.OrderItemEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderRequestDto {
 
     private Long userId;

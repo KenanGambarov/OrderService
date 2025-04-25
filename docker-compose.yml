@@ -20,7 +20,7 @@ services:
       DB_NAME: order_service
       DB_CONNECTION_USERNAME: admin
       DB_CONNECTION_PASSWORD: 123456
-  cart_db:
+  order_db:
     hostname: postgresql
     image: postgres:15
     networks:
@@ -43,7 +43,7 @@ services:
 #      - "8581:8080"
   redis:
     image: redis:latest
-    container_name: redis_cart
+    container_name: redis_order
     volumes:
       - redis_data:/data
     networks:

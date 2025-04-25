@@ -10,7 +10,6 @@ public enum ExceptionConstants {
     CLIENT_ERROR("Exception from Client"),
     ORDER_NOT_FOUND("Order Not Found or Not Permitted"),
     ORDER_STATUS("This order already %sED");
-//    ORDER_CANCELED_OR_DELIVERED("Order Canceled or Delivered");
 
     private final String message;
 

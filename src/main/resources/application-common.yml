@@ -29,7 +29,7 @@ client:
     url: http://ms.product:8080
 rabbitmq:
   publisher-service:
-    queue: PRODUCT_UPDATE
-    dlq: PRODUCT_UPDATE_DLQ
+    queue: ORDER_UPDATE
+    dlq: ORDER_UPDATE_DLQ
 server:
   port: 8083
