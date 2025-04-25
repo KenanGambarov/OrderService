@@ -47,21 +47,29 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public void creatOrder(OrderRequestDto orderRequestDto) {
+        log.info("Order with Id: {} begin", orderRequestDto.getUserId());
         OrderEntity order = OrderMapper.toEntity(orderRequestDto);
-
+        log.info("OrderEntity with Id: {} ", orderRequestDto.getUserId());
         List<OrderItemEntity> itemEntities = orderRequestDto.getOrderItems()
                 .stream().map(o ->
                         {
+
                         Double price = productServiceClient.getProductById(o.getProductId()).getPrice();
+                        log.info("Order with Id: {} price", price);
                         return OrderItemMapper.toEntity(o,order,price);
                         }).toList();
+        log.info("itemEntities with Id: {} ", orderRequestDto.getUserId());
+
         order.setOrderItems(itemEntities);
+        log.info("BigDecimal with Id: {} ", orderRequestDto.getUserId());
 
         BigDecimal totalAmount = itemEntities.stream()
                 .map(OrderItemEntity::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("setTotalAmount with Id: {} ", orderRequestDto.getUserId());
 
         order.setTotalAmount(totalAmount);
+        log.info("save with Id: {} ", orderRequestDto.getUserId());
 
         orderRepository.save(order);
         log.info("Order with Id: {} created", order.getId());
