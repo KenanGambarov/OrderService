@@ -25,14 +25,14 @@ public class OrderController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public void creatOrder(OrderRequestDto orderRequestDto){
+    public void creatOrder(@RequestBody OrderRequestDto orderRequestDto){
         log.info("orderRequestDto getUserId {}",orderRequestDto.getUserId());
         orderService.creatOrder(orderRequestDto);
     }
 
     @PutMapping()
     @ResponseStatus(HttpStatus.OK)
-    public void changeOrderStatus(Long userId, Long orderId, OrderStatus orderStatus){
+    public void changeOrderStatus(Long userId, Long orderId,@RequestBody OrderStatus orderStatus){
         orderService.changeOrderStatus(userId, orderId, orderStatus);
     }
 
