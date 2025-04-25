@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.orderservice.exception.ExceptionConstants.ORDER_NOT_FOUND;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,7 +26,7 @@ public class GlobalExceptionHandler {
         return ExceptionResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
-                .errors(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .errors(ORDER_NOT_FOUND.getMessage())
                 .message(ex.getMessage())
                 .build();
     }

@@ -2,71 +2,52 @@ package com.orderservice.service.impl;
 
 import com.orderservice.client.ProductServiceClient;
 import com.orderservice.dto.enums.OrderStatus;
-import com.orderservice.dto.enums.PaymentStatus;
-import com.orderservice.dto.product.ProductDto;
 import com.orderservice.dto.request.OrderRequestDto;
-import com.orderservice.dto.response.OrderItemResponseDto;
 import com.orderservice.dto.response.OrderResponseDto;
 import com.orderservice.entity.OrderEntity;
 import com.orderservice.entity.OrderItemEntity;
+import com.orderservice.exception.ExceptionConstants;
+import com.orderservice.mapper.OrderItemMapper;
+import com.orderservice.mapper.OrderMapper;
 import com.orderservice.repository.OrderRepository;
+import com.orderservice.service.OrderCacheService;
 import com.orderservice.service.OrderService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+
+import static com.orderservice.exception.ExceptionConstants.ORDER_NOT_FOUND;
 
 @Slf4j
+@AllArgsConstructor
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private OrderRepository orderRepository;
-    private ProductServiceClient productServiceClient;
+    private final OrderRepository orderRepository;
+    private final ProductServiceClient productServiceClient;
+    private final OrderCacheService cacheService;
 
-    private OrderResponseDto getUserOrder(Long userId){
-        OrderEntity order = orderRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Sifariş tapılmadı və ya icazə yoxdur"));
-        return OrderResponseDto.builder()
-                    .status(order.getStatus())
-                    .orderDate(order.getOrderDate())
-                    .paymentStatus(order.getPaymentStatus())
-                    .shippingAddress(order.getShippingAddress())
-                    .orderItems(order.getOrderItems().stream().map(e -> OrderItemResponseDto.builder()
-                            .price(e.getPrice())
-                            .productId(e.getProductId())
-                            .quantity(e.getQuantity())
-                            .totalPrice(e.getTotalPrice())
-                            .build()).toList())
-                    .build();
+    public OrderResponseDto getUserOrder(Long userId){
+        OrderEntity order = cacheService.getOrderFromCacheOrDB(userId);
+        return OrderMapper.toResponseDto(order);
 
     }
 
     @Transactional
     @Override
     public void creatOrder(OrderRequestDto orderRequestDto) {
-        OrderEntity order = OrderEntity.builder()
-                .userId(orderRequestDto.getUserId())
-                .status(OrderStatus.CONFIRMED)
-                .orderDate(new Date())
-                .shippingAddress(orderRequestDto.getShippingAddress())
-                .paymentStatus(PaymentStatus.PAID)
-                .statusChangeDate(new Date())
-                .build();
+        OrderEntity order = OrderMapper.toEntity(orderRequestDto);
 
         List<OrderItemEntity> itemEntities = orderRequestDto.getOrderItems()
                 .stream().map(o ->
                         {
                         Double price = productServiceClient.getProductById(o.getProductId()).getPrice();
-                        return OrderItemEntity.builder()
-                        .order(order)
-                        .productId(o.getProductId())
-                        .quantity(o.getQuantity())
-                        .price(price)
-                        .build();
+                        return OrderItemMapper.toEntity(o,order,price);
                         }).toList();
         order.setOrderItems(itemEntities);
 
@@ -80,18 +61,24 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    @Transactional
     @Override
-    public void orderCanceled(Long userId, Long orderId) {
+    public void changeOrderStatus(Long userId, Long orderId, OrderStatus orderStatus) {
         OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
-                .orElseThrow(() -> new RuntimeException("Sifariş tapılmadı və ya icazə yoxdur"));
+                .orElseThrow(() -> new RuntimeException(ORDER_NOT_FOUND.getMessage()));
 
-        if (order.getStatus() == OrderStatus.CANCELED || order.getStatus() == OrderStatus.DELIVERED) {
-            throw new RuntimeException("Bu sifariş artıq ləğv olunub və ya tamamlanıb");
+        if (order.getStatus() == OrderStatus.CANCELED
+                || order.getStatus() == OrderStatus.SHIPPED
+                || order.getStatus() == OrderStatus.DELIVERED) {
+            throw new RuntimeException(ExceptionConstants.ORDER_STATUS.getMessagePattern(order.getStatus()));
         }
 
-        order.setStatus(OrderStatus.CANCELED);
+//        some OrderStatus case should check
+
+        order.setStatus(orderStatus);
         order.setStatusChangeDate(new Date());
         orderRepository.save(order);
+        cacheService.clearOrderCache(userId);
     }
 
 

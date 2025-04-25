@@ -27,8 +27,6 @@ redis:
 client:
   product-service:
     url: http://ms.product:8080
-  stock-service:
-    url: http://ms.stock:8082
 rabbitmq:
   publisher-service:
     queue: PRODUCT_UPDATE

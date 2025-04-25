@@ -1,14 +1,14 @@
 package com.orderservice.client.decoder;
 
-import com.cartservice.exception.FeignClientException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.orderservice.exception.FeignClientException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.cartservice.client.decoder.JsonNodeFieldName.MESSAGE;
-import static com.cartservice.exception.ExceptionConstants.CLIENT_ERROR;
+import static com.orderservice.client.decoder.JsonNodeFieldName.MESSAGE;
+import static com.orderservice.exception.ExceptionConstants.CLIENT_ERROR;
 
 @Slf4j
 public class ClientServiceErrorDecoder implements ErrorDecoder {
