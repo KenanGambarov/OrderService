@@ -1,16 +1,16 @@
 package com.orderservice.repository;
 
-import com.orderservice.entity.OrderEntity;
+import com.orderservice.entity.OrdersEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<OrderEntity,Long> {
+public interface OrderRepository extends JpaRepository<OrdersEntity,Long> {
 
     @EntityGraph(attributePaths = {"orderItems"})
-    Optional<OrderEntity> findByIdAndUserId(Long orderId, Long userId);
+    Optional<OrdersEntity> findByIdAndUserId(Long orderId, Long userId);
 
     @EntityGraph(attributePaths = {"orderItems"})
-    Optional<OrderEntity> findByUserId(Long userId);
+    Optional<OrdersEntity> findByUserId(Long userId);
 }

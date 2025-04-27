@@ -5,10 +5,10 @@ import com.orderservice.dto.enums.OrderStatus;
 import com.orderservice.dto.enums.RabbitQueueType;
 import com.orderservice.dto.request.OrderRequestDto;
 import com.orderservice.dto.response.OrderResponseDto;
-import com.orderservice.entity.OrderEntity;
+import com.orderservice.entity.OrdersEntity;
 import com.orderservice.entity.OrderItemEntity;
-import com.orderservice.entity.OrderStatusHistoryEntity;
 import com.orderservice.exception.ExceptionConstants;
+import com.orderservice.exception.NotFoundException;
 import com.orderservice.mapper.OrderItemMapper;
 import com.orderservice.mapper.OrderMapper;
 import com.orderservice.mapper.OrderStatusHistoryMapper;
@@ -40,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final QueueSender queueSender;
 
     public OrderResponseDto getUserOrder(Long userId){
-        OrderEntity order = cacheService.getOrderFromCacheOrDB(userId);
+        OrdersEntity order = cacheService.getOrderFromCacheOrDB(userId).orElseThrow(()-> new NotFoundException(ExceptionConstants.ORDER_NOT_FOUND.getMessage()));
         return OrderMapper.toResponseDto(order);
     }
 
@@ -48,38 +48,38 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void creatOrder(OrderRequestDto orderRequestDto) {
         log.info("Order with Id: {} begin", orderRequestDto.getUserId());
-        OrderEntity order = OrderMapper.toEntity(orderRequestDto);
-        log.info("OrderEntity with Id: {} ", orderRequestDto.getUserId());
+        OrdersEntity order = OrderMapper.toEntity(orderRequestDto);
+        log.info("OrderEntity with status: {} ", order.getStatus());
         List<OrderItemEntity> itemEntities = orderRequestDto.getOrderItems()
                 .stream().map(o ->
                         {
-
                         Double price = productServiceClient.getProductById(o.getProductId()).getPrice();
                         log.info("Order with Id: {} price", price);
-                        return OrderItemMapper.toEntity(o,order,price);
+                        return OrderItemMapper.toEntity(o,order,price, BigDecimal.valueOf(price*o.getQuantity()));
                         }).toList();
-        log.info("itemEntities with Id: {} ", orderRequestDto.getUserId());
+        log.info("OrderEntity with status2: {} ", order.getStatus());
 
         order.setOrderItems(itemEntities);
-        log.info("BigDecimal with Id: {} ", orderRequestDto.getUserId());
+        log.info("OrderEntity with status3: {} ", order.getStatus());
 
         BigDecimal totalAmount = itemEntities.stream()
-                .map(OrderItemEntity::getTotalPrice)
+                .map(item -> item.getTotalPrice() != null ? item.getTotalPrice() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        log.info("setTotalAmount with Id: {} ", orderRequestDto.getUserId());
+        log.info("OrderEntity with status4: {} ", order.getStatus());
 
         order.setTotalAmount(totalAmount);
-        log.info("save with Id: {} ", orderRequestDto.getUserId());
+        log.info("OrderEntity with status5: {} ", order.getStatus());
 
         orderRepository.save(order);
-        log.info("Order with Id: {} created", order.getId());
+        log.info("OrderEntity with status6: {} ", order.getStatus());
         saveOrderHistory(order,null);
+        queueSender.sendOrderUpdate(RabbitQueueType.QUEUE_NAME.getQueueName(),OrderMapper.toRequestDto(order.getUserId()));
     }
 
     @Transactional
     @Override
     public void changeOrderStatus(Long userId, Long orderId, OrderStatus orderStatus) {
-        OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
+        OrdersEntity order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new RuntimeException(ORDER_NOT_FOUND.getMessage()));
 
         if (order.getStatus() == OrderStatus.CANCELED
@@ -95,11 +95,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatusChangeDate(new Date());
         orderRepository.save(order);
         log.info("Order: {} status changed to: {}", order.getId(),order.getStatus());
-        queueSender.sendOrderUpdate(RabbitQueueType.QUEUE_NAME.getQueueName(),OrderMapper.toRequestDto(userId));
+//        queueSender.sendOrderUpdate(RabbitQueueType.QUEUE_NAME.getQueueName(),OrderMapper.toRequestDto(userId));
         cacheService.clearOrderCache(userId);
     }
 
-    private void saveOrderHistory(OrderEntity order, OrderStatus orderStatus) {
+    private void saveOrderHistory(OrdersEntity order, OrderStatus orderStatus) {
         historyRepository.save(
                 OrderStatusHistoryMapper.toEntity(order,orderStatus)
         );

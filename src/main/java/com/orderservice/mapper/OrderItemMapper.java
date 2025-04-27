@@ -1,21 +1,22 @@
 package com.orderservice.mapper;
 
 import com.orderservice.dto.request.OrderItemRequestDto;
-import com.orderservice.dto.request.OrderRequestDto;
 import com.orderservice.dto.response.OrderItemResponseDto;
-import com.orderservice.entity.OrderEntity;
+import com.orderservice.entity.OrdersEntity;
 import com.orderservice.entity.OrderItemEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class OrderItemMapper {
 
-    public static OrderItemEntity toEntity(OrderItemRequestDto itemRequestDto, OrderEntity order,Double price){
+    public static OrderItemEntity toEntity(OrderItemRequestDto itemRequestDto, OrdersEntity order, Double price, BigDecimal totalPrice){
         return OrderItemEntity.builder()
-                .order(order)
+                .orders(order)
                 .productId(itemRequestDto.getProductId())
                 .quantity(itemRequestDto.getQuantity())
                 .price(price)
+                .totalPrice(totalPrice)
                 .build();
     }
 

@@ -4,14 +4,14 @@ import com.orderservice.dto.enums.OrderStatus;
 import com.orderservice.dto.enums.PaymentStatus;
 import com.orderservice.dto.request.OrderRequestDto;
 import com.orderservice.dto.response.OrderResponseDto;
-import com.orderservice.entity.OrderEntity;
+import com.orderservice.entity.OrdersEntity;
 
 import java.util.Date;
 
 public class OrderMapper {
 
-    public static OrderEntity toEntity(OrderRequestDto orderRequestDto) {
-        return OrderEntity.builder()
+    public static OrdersEntity toEntity(OrderRequestDto orderRequestDto) {
+        return OrdersEntity.builder()
                 .userId(orderRequestDto.getUserId())
                 .status(OrderStatus.PENDING)
                 .orderDate(new Date())
@@ -21,7 +21,7 @@ public class OrderMapper {
                 .build();
     }
 
-    public static OrderResponseDto toResponseDto(OrderEntity order) {
+    public static OrderResponseDto toResponseDto(OrdersEntity order) {
         return OrderResponseDto.builder()
                 .status(order.getStatus())
                 .orderDate(order.getOrderDate())
@@ -31,8 +31,8 @@ public class OrderMapper {
                 .build();
     }
 
-    public static OrderEntity toRequestDto(Long userId){
-        return OrderEntity.builder()
+    public static OrderRequestDto toRequestDto(Long userId){
+        return OrderRequestDto.builder()
                 .userId(userId)
                 .build();
     }

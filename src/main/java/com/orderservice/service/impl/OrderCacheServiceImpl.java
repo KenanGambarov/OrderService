@@ -1,6 +1,6 @@
 package com.orderservice.service.impl;
 
-import com.orderservice.entity.OrderEntity;
+import com.orderservice.entity.OrdersEntity;
 import com.orderservice.exception.ExceptionConstants;
 import com.orderservice.exception.NotFoundException;
 import com.orderservice.repository.OrderRepository;
@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -25,15 +27,16 @@ public class OrderCacheServiceImpl implements OrderCacheService {
     @Override
     @CircuitBreaker(name = "redisBreaker", fallbackMethod = "fallbackOrderCache")
     @Retry(name = "redisRetry", fallbackMethod = "fallbackOrderCache")
-    public OrderEntity getOrderFromCacheOrDB(Long userId) {
-        return cacheUtil.getOrLoad(OrderCacheConstraints.ORDER_KEY.getKey(userId),
+    public Optional<OrdersEntity> getOrderFromCacheOrDB(Long userId) {
+        OrdersEntity ordersEntity = cacheUtil.getOrLoad(OrderCacheConstraints.ORDER_KEY.getKey(userId),
                 () -> orderRepository.findByUserId(userId).orElse(null),
                 OrderCacheDurationConstraints.DAY.toDuration());
+        return Optional.ofNullable(ordersEntity);
     }
 
-    public OrderEntity fallbackStockCache(Long userId, Throwable t) {
+    public Optional fallbackStockCache(Long userId, Throwable t) {
         log.error("Redis not available for userId {}, falling back to DB. Error: {}",userId, t.getMessage());
-        return  orderRepository.findByUserId(userId).orElseThrow(()-> new NotFoundException(ExceptionConstants.ORDER_NOT_FOUND.getMessage()));
+        return  Optional.empty();
     }
 
     @Override

@@ -19,8 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
-@Table(name="order")
-public class OrderEntity {
+@Table(name="orders")
+public class OrdersEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +44,6 @@ public class OrderEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date statusChangeDate;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     private List<OrderItemEntity> orderItems;
 }

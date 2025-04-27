@@ -25,13 +25,19 @@ public class OrderStatusHistoryEntity {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private OrderEntity orderId;
+    private OrdersEntity orderId;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus oldStatus;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus newStatus;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date changedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        this.changedAt = new Date();
+    }
 }

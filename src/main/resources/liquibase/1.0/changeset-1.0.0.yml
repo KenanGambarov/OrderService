@@ -4,7 +4,7 @@ databaseChangeLog:
       author: kenan
       changes:
         - createTable:
-            tableName: order
+            tableName: orders
             columns:
               - column:
                   name: id
@@ -70,7 +70,7 @@ databaseChangeLog:
             baseTableName: order_item
             baseColumnNames: order_id
             constraintName: fk_order_item_order
-            referencedTableName: order
+            referencedTableName: orders
             referencedColumnNames: id
   - changeSet:
       id: 3-create-order-status-history-table
@@ -92,7 +92,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fk_order_status_history_order
-                    references: order(id)
+                    references: orders(id)
               - column:
                   name: old_status
                   type: VARCHAR(50)

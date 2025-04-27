@@ -6,6 +6,7 @@ import com.orderservice.dto.enums.PaymentStatus;
 import com.orderservice.entity.OrderItemEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
