@@ -40,38 +40,32 @@ public class OrderServiceImpl implements OrderService {
     private final QueueSender queueSender;
 
     public OrderResponseDto getUserOrder(Long userId){
-        OrdersEntity order = cacheService.getOrderFromCacheOrDB(userId).orElseThrow(()-> new NotFoundException(ExceptionConstants.ORDER_NOT_FOUND.getMessage()));
+        OrdersEntity order = cacheService.getOrderFromCacheOrDB(userId)
+                .orElseThrow(()-> new NotFoundException(ExceptionConstants.ORDER_NOT_FOUND.getMessage()));
         return OrderMapper.toResponseDto(order);
     }
 
     @Transactional
     @Override
     public void creatOrder(OrderRequestDto orderRequestDto) {
-        log.info("Order with Id: {} begin", orderRequestDto.getUserId());
         OrdersEntity order = OrderMapper.toEntity(orderRequestDto);
-        log.info("OrderEntity with status: {} ", order.getStatus());
         List<OrderItemEntity> itemEntities = orderRequestDto.getOrderItems()
                 .stream().map(o ->
                         {
-                        Double price = productServiceClient.getProductById(o.getProductId()).getPrice();
-                        log.info("Order with Id: {} price", price);
-                        return OrderItemMapper.toEntity(o,order,price, BigDecimal.valueOf(price*o.getQuantity()));
+                            Double price = productServiceClient.getProductById(o.getProductId()).getPrice();
+                            return OrderItemMapper.toEntity(o,order,price, BigDecimal.valueOf(price*o.getQuantity()));
                         }).toList();
-        log.info("OrderEntity with status2: {} ", order.getStatus());
 
         order.setOrderItems(itemEntities);
-        log.info("OrderEntity with status3: {} ", order.getStatus());
 
         BigDecimal totalAmount = itemEntities.stream()
                 .map(item -> item.getTotalPrice() != null ? item.getTotalPrice() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        log.info("OrderEntity with status4: {} ", order.getStatus());
 
         order.setTotalAmount(totalAmount);
-        log.info("OrderEntity with status5: {} ", order.getStatus());
 
         orderRepository.save(order);
-        log.info("OrderEntity with status6: {} ", order.getStatus());
+        log.info("Order created with id {} and status {}: " ,order.getId(), order.getStatus());
         saveOrderHistory(order,null);
         queueSender.sendOrderUpdate(RabbitQueueType.QUEUE_NAME.getQueueName(),OrderMapper.toRequestDto(order.getUserId()));
     }

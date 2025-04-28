@@ -34,7 +34,7 @@ public class OrderCacheServiceImpl implements OrderCacheService {
         return Optional.ofNullable(ordersEntity);
     }
 
-    public Optional fallbackStockCache(Long userId, Throwable t) {
+    public Optional<OrdersEntity> fallbackStockCache(Long userId, Throwable t) {
         log.error("Redis not available for userId {}, falling back to DB. Error: {}",userId, t.getMessage());
         return  Optional.empty();
     }
