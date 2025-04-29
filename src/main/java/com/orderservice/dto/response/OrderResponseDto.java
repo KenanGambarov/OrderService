@@ -1,5 +1,6 @@
 package com.orderservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.orderservice.dto.enums.OrderStatus;
 import com.orderservice.dto.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldNameConstants
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderResponseDto {
+
+    private Long userId;
 
     private OrderStatus status;
 

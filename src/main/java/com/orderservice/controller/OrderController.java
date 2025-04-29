@@ -17,10 +17,10 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping()
+    @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public OrderResponseDto getUserOrder(Long id){
-        return orderService.getUserOrder(id);
+    public OrderResponseDto getUserOrder(@PathVariable Long userId){
+        return orderService.getUserOrder(userId);
     }
 
     @PostMapping()

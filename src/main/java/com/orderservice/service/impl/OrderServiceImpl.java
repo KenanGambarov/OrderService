@@ -2,8 +2,10 @@ package com.orderservice.service.impl;
 
 import com.orderservice.client.ProductServiceClient;
 import com.orderservice.dto.enums.OrderStatus;
+import com.orderservice.dto.enums.PaymentStatus;
 import com.orderservice.dto.enums.RabbitQueueType;
 import com.orderservice.dto.request.OrderRequestDto;
+import com.orderservice.dto.request.PaymentRequestDto;
 import com.orderservice.dto.response.OrderResponseDto;
 import com.orderservice.entity.OrdersEntity;
 import com.orderservice.entity.OrderItemEntity;
@@ -45,6 +47,13 @@ public class OrderServiceImpl implements OrderService {
         return OrderMapper.toResponseDto(order);
     }
 
+    @Override
+    public OrderResponseDto getOrderById(Long orderId) {
+        OrdersEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException(ExceptionConstants.ORDER_NOT_FOUND.getMessage()));
+        return OrderMapper.toInternalResponseDto(order);
+    }
+
     @Transactional
     @Override
     public void creatOrder(OrderRequestDto orderRequestDto) {
@@ -68,6 +77,18 @@ public class OrderServiceImpl implements OrderService {
         log.info("Order created with id {} and status {}: " ,order.getId(), order.getStatus());
         saveOrderHistory(order,null);
         queueSender.sendOrderUpdate(RabbitQueueType.QUEUE_NAME.getQueueName(),OrderMapper.toRequestDto(order.getUserId()));
+    }
+
+    @Transactional
+    @Override
+    public void changePaymentStatus(PaymentRequestDto changePaymentStatus) {
+        OrdersEntity order = orderRepository.findByIdAndUserId(changePaymentStatus.getOrderId(), changePaymentStatus.getUserId())
+                .orElseThrow(() -> new RuntimeException(ORDER_NOT_FOUND.getMessage()));
+
+        order.setPaymentStatus(changePaymentStatus.getStatus());
+        orderRepository.save(order);
+        log.info("Order: {} payment status changed to: {}", order.getId(),order.getPaymentStatus());
+        cacheService.clearOrderCache(changePaymentStatus.getUserId());
     }
 
     @Transactional
