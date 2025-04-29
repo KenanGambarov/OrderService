@@ -2,7 +2,6 @@ package com.orderservice.service.impl;
 
 import com.orderservice.client.ProductServiceClient;
 import com.orderservice.dto.enums.OrderStatus;
-import com.orderservice.dto.enums.PaymentStatus;
 import com.orderservice.dto.enums.RabbitQueueType;
 import com.orderservice.dto.request.OrderRequestDto;
 import com.orderservice.dto.request.PaymentRequestDto;
