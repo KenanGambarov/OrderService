@@ -40,5 +40,8 @@ rabbitmq:
   publisher-service:
     queue: ORDER_UPDATE
     dlq: ORDER_UPDATE_DLQ
+  payment-service:
+    queue: PAYMENT_UPDATE
+    dlq: PAYMENT_UPDATE_DLQ
 server:
   port: 8083

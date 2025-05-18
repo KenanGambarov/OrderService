@@ -23,6 +23,7 @@ public class OrderMapper {
 
     public static OrderResponseDto toResponseDto(OrdersEntity order) {
         return OrderResponseDto.builder()
+                .userId(order.getUserId())
                 .status(order.getStatus())
                 .orderDate(order.getOrderDate())
                 .paymentStatus(order.getPaymentStatus())
@@ -30,6 +31,14 @@ public class OrderMapper {
                 .orderItems(OrderItemMapper.toResponseDto(order.getOrderItems()))
                 .build();
     }
+
+    public static OrderResponseDto toInternalResponseDto(OrdersEntity order) {
+        return OrderResponseDto.builder()
+                .userId(order.getUserId())
+                .status(order.getStatus())
+                .build();
+    }
+
 
     public static OrderRequestDto toRequestDto(Long userId){
         return OrderRequestDto.builder()
