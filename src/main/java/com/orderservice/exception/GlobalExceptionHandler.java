@@ -2,6 +2,7 @@ package com.orderservice.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -64,13 +65,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FeignClientException.class)
-    public ExceptionResponse handleGenericException(FeignClientException ex) {
-        log.error("FeignClientException: {}, Status {}", ex.getMessage(),ex.getStatus());
+    public ResponseEntity<ExceptionResponse> handleGenericException(FeignClientException ex) {
+        log.error("FeignClientException: {}, Status {}", ex.getMessage(), ex.getStatus());
 
-        return ExceptionResponse.builder()
+        ExceptionResponse response = ExceptionResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(ex.getStatus())
                 .message(ex.getMessage())
                 .build();
+        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getStatus()));
+
     }
 }

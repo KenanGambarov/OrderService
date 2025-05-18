@@ -36,6 +36,7 @@ public class OrderMapper {
         return OrderResponseDto.builder()
                 .userId(order.getUserId())
                 .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
                 .build();
     }
 
