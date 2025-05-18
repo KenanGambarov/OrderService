@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: 1-create-order-table
+      id: 3-create-order-status-history-table
       author: kenan
       changes:
         - createTable:
-            tableName: orders
+            tableName: order_status_history
             columns:
               - column:
                   name: id
@@ -14,23 +14,18 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: user_id
+                  name: order_id
                   type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_order_status_history_order
+                    references: orders(id)
               - column:
-                  name: status
+                  name: old_status
                   type: VARCHAR(50)
               - column:
-                  name: total_amount
-                  type: DECIMAL(19,2)
-              - column:
-                  name: order_date
-                  type: TIMESTAMP
-              - column:
-                  name: shipping_address
-                  type: VARCHAR(255)
-              - column:
-                  name: payment_status
+                  name: new_status
                   type: VARCHAR(50)
               - column:
-                  name: status_change_date
+                  name: changed_at
                   type: TIMESTAMP
